@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  passwordHash  String
+  name          String
+  role          String    @default("client")
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  resetToken    String?
+  resetExpires  DateTime?
+  policies      PolicyPlaceholder[]
+  messages      PortalMessage[]
+}
+
+model Lead {
+  id                String   @id @default(cuid())
+  inquiryNumber     String   @unique
+  type              String
+  status            String   @default("New")
+  source            String   @default("Direct")
+  insuranceType     String
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  preferredContact  String
+  zipCode           String?
+  payload           String
+  notes             String   @default("")
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  utmContent        String?
+  utmTerm           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ContactMessage {
+  id               String   @id @default(cuid())
+  inquiryNumber    String   @unique
+  name             String
+  email            String
+  phone            String
+  insuranceType    String
+  message          String
+  preferredContact String
+  source           String   @default("Contact")
+  status           String   @default("New")
+  notes            String   @default("")
+  createdAt        DateTime @default(now())
+}
+
+model CallbackRequest {
+  id             String   @id @default(cuid())
+  inquiryNumber  String   @unique
+  name           String
+  phone          String
+  email          String?
+  preferredTime  String
+  insuranceType  String?
+  message        String?
+  status         String   @default("New")
+  notes          String   @default("")
+  source         String   @default("Callback")
+  createdAt      DateTime @default(now())
+}
+
+model ChatConversation {
+  id        String        @id @default(cuid())
+  sessionId String
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+  leadName  String?
+  leadEmail String?
+  leadPhone String?
+  status    String        @default("open")
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id])
+  role           String
+  content        String
+  createdAt      DateTime         @default(now())
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  category    String
+  shortDesc   String
+  longDesc    String
+  icon        String
+  highlights  String
+  published   Boolean @default(true)
+  sortOrder   Int     @default(0)
+}
+
+model Faq {
+  id        String  @id @default(cuid())
+  question  String
+  answer    String
+  category  String  @default("General")
+  published Boolean @default(true)
+  sortOrder Int     @default(0)
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String
+  category    String
+  status      String   @default("draft")
+  seoTitle    String?
+  seoDesc     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+}
+
+model TeamMember {
+  id        String  @id @default(cuid())
+  name      String
+  title     String
+  biography String
+  email     String?
+  phone     String?
+  photoUrl  String?
+  published Boolean @default(false)
+  sortOrder Int     @default(0)
+}
+
+model PolicyPlaceholder {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  label       String
+  note        String
+  createdAt   DateTime @default(now())
+}
+
+model PortalMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  fromRole  String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+}
